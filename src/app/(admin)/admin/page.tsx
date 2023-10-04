@@ -1,7 +1,6 @@
 import React from 'react'
-
 function AdminPage() {
-  return <div>AdminPage</div>
+  return <section className="">Admins</section>
 }
 
 export default AdminPage
