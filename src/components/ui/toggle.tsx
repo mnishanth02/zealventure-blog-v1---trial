@@ -25,7 +25,7 @@ const toggleVariants = cva(
         lg: 'h-11 px-5',
       },
       active: {
-        true: 'data-[state=on]:bg-secondary data-[state=on]:text-secondary-foreground',
+        true: 'data-[state=on]:bg-primary data-[state=on]:text-primary-foreground',
         false: '',
       },
     },

@@ -66,6 +66,9 @@ module.exports = {
         'accordion-up': 'accordion-up 0.2s ease-out',
       },
     },
+    backgroundImage: {
+      'png-pattern': "url('/empty-bg.jpg')",
+    },
   },
   plugins: [require('tailwindcss-animate'), require('@tailwindcss/typography')],
 }

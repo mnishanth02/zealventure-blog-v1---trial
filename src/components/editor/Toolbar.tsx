@@ -1,5 +1,5 @@
 import { Editor } from '@tiptap/react'
-import { FC, MouseEvent } from 'react'
+import { FC } from 'react'
 
 import { Separator } from '@/components/ui/separator'
 import {
@@ -9,7 +9,6 @@ import {
   SelectItem,
   SelectTrigger,
 } from '@/components/ui/select'
-import { getFocusedEditor } from './EditorUtils'
 import { Toggle } from '../ui/toggle'
 import {
   BsTypeBold,
@@ -21,11 +20,15 @@ import {
   BsTypeItalic,
   BsTypeUnderline,
   BsImageFill,
-  BsLink45Deg,
   BsYoutube,
 } from 'react-icons/bs'
 
 import { RiDoubleQuotesL } from 'react-icons/ri'
+import { getFocusedEditor } from '@/lib/utils'
+import InsertLink, { LinkOptions } from './toolbar/InsertLink'
+import EmbedYoutube from './toolbar/EmbedYoutube'
+import { log } from 'console'
+import InsertGallery, { ImageSelectionResult } from './Gallery/InsertGallery'
 interface ToolbarProps {
   editor: Editor | null
 }
@@ -58,11 +61,24 @@ const Toolbar: FC<ToolbarProps> = ({ editor }) => {
         break
     }
   }
-  const toggleTextStyle = (
-    e: MouseEvent<HTMLButtonElement, globalThis.MouseEvent>,
-  ) => {
-    console.log('toggleTextStyle->>', e)
-    getFocusedEditor(editor).toggleBold().run()
+
+  const handleLinkFormSubmit = ({ url, newTab }: LinkOptions) => {
+    if (newTab) {
+      editor.commands.setLink({ href: url, target: '_blank' })
+    } else {
+      editor.commands.setLink({ href: url })
+    }
+  }
+
+  const handleEmbedYoutube = (url: string) => {
+    editor.chain().focus().setYoutubeVideo({ src: url }).run()
+  }
+  const handleImageSelection = (result: ImageSelectionResult) => {
+    editor
+      ?.chain()
+      .focus()
+      .setImage({ src: result.src, alt: result.altText })
+      .run()
   }
 
   return (
@@ -144,15 +160,8 @@ const Toolbar: FC<ToolbarProps> = ({ editor }) => {
       >
         <BsBraces size={20} />
       </Toggle>
-      <Toggle
-        variant={'outline'}
-        size={'sm'}
-        active={editor.isActive('link')}
-        // onClick={() => getFocusedEditor(editor).togglelink().run()}
-        aria-label="Toggle Link"
-      >
-        <BsLink45Deg size={20} />
-      </Toggle>
+
+      <InsertLink editor={editor} onSubmit={handleLinkFormSubmit} />
 
       <Toggle
         active={editor.isActive('orderedList')}
@@ -173,25 +182,13 @@ const Toolbar: FC<ToolbarProps> = ({ editor }) => {
         <BsListUl size={20} />
       </Toggle>
 
-      <Toggle
-        active={editor.isActive('image')}
-        variant={'outline'}
-        size={'sm'}
-        onClick={() => getFocusedEditor(editor).toggleBold().run()}
-        aria-label="Toggle Image"
-      >
-        <BsImageFill size={20} />
-      </Toggle>
+      <EmbedYoutube onSubmit={handleEmbedYoutube} editor={editor} />
 
-      <Toggle
-        active={editor.isActive('youtube')}
-        variant={'outline'}
-        size={'sm'}
-        onClick={() => getFocusedEditor(editor).toggleBold().run()}
-        aria-label="Toggle Youtube"
-      >
-        <BsYoutube size={20} />
-      </Toggle>
+      <InsertGallery
+        editor={editor}
+        onFileSelect={() => {}}
+        onSelect={handleImageSelection}
+      />
     </div>
   )
 }
