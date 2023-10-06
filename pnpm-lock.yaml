@@ -97,9 +97,6 @@ devDependencies:
   '@tailwindcss/typography':
     specifier: ^0.5.10
     version: 0.5.10(tailwindcss@3.3.3)
-  '@types/formidable':
-    specifier: ^3.4.3
-    version: 3.4.3
   '@types/node':
     specifier: latest
     version: 20.8.2
@@ -1360,12 +1357,6 @@ packages:
     transitivePeerDependencies:
       - '@tiptap/pm'
     dev: false
-
-  /@types/formidable@3.4.3:
-    resolution: {integrity: sha512-FRB5KNIYgCLDvw/ho7daBVqdQRG9Ptk1tMlZ2B5ibAjxDfXFkO6fJaP+ojmS8ljqmnC5If9u24WdWcVPaN3thg==}
-    dependencies:
-      '@types/node': 20.8.2
-    dev: true
 
   /@types/json5@0.0.29:
     resolution: {integrity: sha512-dRLjCWHYg4oaA77cxO64oO+7JwCwnIzkZPdrrC71jQmQtlhM556pwKo5bUzqvZndkVbeFLIIi+9TC40JNF5hNQ==}
