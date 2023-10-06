@@ -21,8 +21,6 @@ import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
 import { DialogClose } from '@radix-ui/react-dialog'
 
-import { CldUploadButton } from 'next-cloudinary'
-
 const images = [
   {
     src: 'https://images.unsplash.com/photo-1664574654529-b60630f33fdb?ixlib=rb-1.2.1&ixid=MnwxMjA3fDF8MHxlZGl0b3JpYWwtZmVlZHwxfHx8ZW58MHx8fHw%3D&auto=format&fit=crop&w=500&q=60',

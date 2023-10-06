@@ -1,18 +1,32 @@
-import { NextRequest } from 'next/server'
-import formidable from 'formidable'
+import cloudinary from '@/lib/cloudinary'
+import { NextRequest, NextResponse } from 'next/server'
+import streamifier from 'streamifier'
 
-export const config = {
-  api: { bodyParser: false },
+export const GET = async (request: NextRequest, response: NextResponse) => {
+  console.log('Testing Response')
+  // return Response.json('success')
+  NextResponse.json({ image: 'Success fr GET' }, { status: 200 })
 }
 
-export async function GET(request: NextRequest) {
-  const {} = request
-}
+export const POST = async (req: NextRequest, res: NextResponse) => {
+  const formData = await req.formData()
+  const data = (await formData.get('image')) as Blob
+  const buffer = Buffer.from(await data.arrayBuffer())
 
-export async function POST(req: any, res: any) {
-  const form = formidable()
-  form.parse(req, (err, fields, files) => {
-    if (err) res.status(500).json({ error: err.mesage })
-    // const imageFile = files.image && (files.image as formidable.File)
-  })
+  try {
+    let cld_upload_stream = await cloudinary.uploader.upload_stream(
+      {
+        folder: 'zealventure',
+        upload_preset: 'yeqhjlwt',
+      },
+      (error, result) => {
+        console.log(error, result)
+      },
+    )
+    const s = streamifier.createReadStream(buffer).pipe(cld_upload_stream)
+  } catch (error) {
+    console.log('error->>', error)
+  }
+
+  return NextResponse.json({ image: 'testing' }, { status: 200 })
 }
