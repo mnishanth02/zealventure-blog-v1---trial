@@ -1,5 +1,5 @@
 import { Editor } from '@tiptap/react'
-import { FC } from 'react'
+import { FC, useEffect } from 'react'
 
 import { Separator } from '@/components/ui/separator'
 import {
@@ -27,13 +27,52 @@ import { RiDoubleQuotesL } from 'react-icons/ri'
 import { getFocusedEditor } from '@/lib/utils'
 import InsertLink, { LinkOptions } from './toolbar/InsertLink'
 import EmbedYoutube from './toolbar/EmbedYoutube'
-import { log } from 'console'
+import axios from 'axios'
 import InsertGallery, { ImageSelectionResult } from './Gallery/InsertGallery'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 interface ToolbarProps {
   editor: Editor | null
 }
 
 const Toolbar: FC<ToolbarProps> = ({ editor }) => {
+  const queryClient = useQueryClient()
+
+  const fetchImages = async () => {
+    const { data } = await axios('/api/image')
+    return data.images as { src: string }[]
+  }
+
+  const {
+    data = [],
+    isLoading: imageIsLoading,
+    isError,
+  } = useQuery({
+    queryKey: ['images'],
+    queryFn: fetchImages,
+  })
+
+  // Mutation logics
+  const uploadImage = async (formData: FormData) => {
+    await axios.post('/api/image', formData)
+  }
+
+  const { mutate: uploadMutaton, isLoading: isUploading } = useMutation({
+    mutationFn: uploadImage,
+    onSuccess: () => {
+      console.log('sucess')
+      queryClient.invalidateQueries(['images'])
+    },
+    onError: () => {
+      console.log('Error ')
+    },
+  })
+
+  const handleImageUpload = async (image: File) => {
+    const formData = new FormData()
+    formData.append('image', image)
+    uploadMutaton(formData)
+  }
+
   if (!editor) return null
 
   const getDDLabel = (): string => {
@@ -73,6 +112,7 @@ const Toolbar: FC<ToolbarProps> = ({ editor }) => {
   const handleEmbedYoutube = (url: string) => {
     editor.chain().focus().setYoutubeVideo({ src: url }).run()
   }
+
   const handleImageSelection = (result: ImageSelectionResult) => {
     editor
       ?.chain()
@@ -186,8 +226,10 @@ const Toolbar: FC<ToolbarProps> = ({ editor }) => {
 
       <InsertGallery
         editor={editor}
-        onFileSelect={() => {}}
+        uploading={isUploading}
+        onFileSelect={handleImageUpload}
         onSelect={handleImageSelection}
+        images={data}
       />
     </div>
   )

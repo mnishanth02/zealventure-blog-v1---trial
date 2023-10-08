@@ -1,10 +1,15 @@
 import AdminNav from '@/components/common/AdminNav'
 import { Button } from '@/components/ui/button'
+import { Metadata } from 'next'
 import Link from 'next/link'
 import { AiOutlineEdit } from 'react-icons/ai'
 
 interface AdminLayoutProps {
   children: React.ReactNode
+}
+
+export const metadata: Metadata = {
+  title: 'Zealventure - Admin',
 }
 
 export default function AdminLayout({ children }: AdminLayoutProps) {
