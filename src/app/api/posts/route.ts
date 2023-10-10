@@ -33,6 +33,8 @@ export const POST = async (req: NextRequest, res: NextResponse) => {
     await dbConnect()
 
     const postExist = await Post.findOne({ slug })
+    console.log('postexist->', postExist)
+
     if (postExist)
       return NextResponse.json(
         { error: 'Slug need to be Unique!' },

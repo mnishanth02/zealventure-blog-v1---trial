@@ -29,9 +29,7 @@ const ThumbnailSelector: FC<ThumbnailSelectorProps> = ({ initialValue }) => {
   }) => {
     const { files } = target
     if (!files) return null
-
     const file = files[0]
-    // setValue('thumbnail', URL.createObjectURL(file))
     setValue('thumbnail', file)
   }
 
@@ -40,7 +38,7 @@ const ThumbnailSelector: FC<ThumbnailSelectorProps> = ({ initialValue }) => {
     if (typeof thumbnailWatch === 'string') {
       setThumbnailTemp(thumbnailWatch)
     } else {
-      setThumbnailTemp(URL.createObjectURL(thumbnailWatch))
+      setThumbnailTemp(URL.createObjectURL(new Blob(thumbnailWatch)))
     }
   }, [thumbnailWatch])
 

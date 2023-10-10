@@ -1,5 +1,6 @@
 'use client'
 
+import { FC, useEffect, useState } from 'react'
 import { useEditor, EditorContent, getMarkRange, Range } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
 import Toolbar from './Toolbar'
@@ -11,7 +12,6 @@ import Placeholder from '@tiptap/extension-placeholder'
 import Link from '@tiptap/extension-link'
 import Youtube from '@tiptap/extension-youtube'
 import Image from '@tiptap/extension-image'
-import { useEffect, useState } from 'react'
 import EditLink from './toolbar/EditLink'
 import { Input } from '../ui/input'
 import SeoForm from './SeoForm'
@@ -24,8 +24,13 @@ import { editorFormSchema } from '@/lib/app.schema'
 import { Form, FormControl, FormField, FormItem, FormMessage } from '../ui/form'
 import { useMutation } from '@tanstack/react-query'
 import axios from 'axios'
+import { log } from 'console'
 
-const Tiptap = () => {
+interface Props {
+  slug?: string
+  buttonTitle?: string
+}
+const Tiptap: FC<Props> = ({ slug, buttonTitle = 'submit' }) => {
   const [selectionRange, setselectionRange] = useState<Range>()
 
   const editor = useEditor({
@@ -79,27 +84,26 @@ const Tiptap = () => {
     }
   }, [editor, selectionRange])
 
-  const initialVal: z.infer<typeof editorFormSchema> = {
-    content: 'New COntent',
-    meta: 'Meta Test',
-    slug: 'Slug',
-    tags: 'Tags',
-    thumbnail:
-      'https://images.unsplash.com/photo-1633332755192-727a05c4013d?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1480&q=80',
-    title: 'New Title',
-  }
-
   const editorForm = useForm<z.infer<typeof editorFormSchema>>({
     resolver: zodResolver(editorFormSchema),
     defaultValues: {
-      title: initialVal.title,
-      content: initialVal.content,
-      thumbnail: initialVal.thumbnail,
-      slug: initialVal.slug,
-      tags: initialVal.tags,
-      meta: initialVal.meta,
+      title: '',
+      content: '',
+      meta: '',
+      slug: '',
+      tags: '',
+      thumbnail: '',
     },
   })
+
+  const { reset, handleSubmit, getValues, control } = editorForm
+
+  useEffect(() => {
+    axios.get(`/api/posts/${slug}`).then((data: any) => {
+      // console.log('axios post data ->>', data.data.post)
+      reset(data.data.post)
+    })
+  }, [reset, slug])
 
   const createPost = async (formData: FormData) => {
     console.log('UI- Orm data -> ', formData)
@@ -136,7 +140,7 @@ const Tiptap = () => {
     createPostMutation(formData)
   }
 
-  const initialContent = editorForm.getValues('content')
+  const initialContent = getValues('content')
   useEffect(() => {
     if (initialContent) {
       editor?.commands.setContent(initialContent)
@@ -147,7 +151,7 @@ const Tiptap = () => {
     <section className="p-3 space-y-4 text-secondary-foreground ">
       <FormProvider {...editorForm}>
         <Form {...editorForm}>
-          <form onSubmit={editorForm.handleSubmit(onSubmitHandler)}>
+          <form onSubmit={handleSubmit(onSubmitHandler)}>
             <div className="sticky top-0 z-10 space-y-4">
               <div className="flex items-center justify-between ">
                 <ThumbnailSelector />
@@ -155,13 +159,13 @@ const Tiptap = () => {
                   <ButtonLoading
                     variant={'default'}
                     type={'submit'}
-                    title="Submit"
+                    title={buttonTitle}
                     loading={false}
                   />
                 </div>
               </div>
               <FormField
-                control={editorForm.control}
+                control={control}
                 name="title"
                 render={({ field }) => (
                   <FormItem>
