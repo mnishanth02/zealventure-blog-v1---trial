@@ -67,7 +67,7 @@ const Toolbar: FC<ToolbarProps> = ({ editor }) => {
     },
   })
 
-  const handleImageUpload = async (image: File) => {
+  const handleImageUpload = (image: File) => {
     const formData = new FormData()
     formData.append('image', image)
     uploadMutaton(formData)

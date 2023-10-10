@@ -7,7 +7,7 @@ import {
 import { Input } from '@/components/ui/input'
 import { editorFormSchema } from '@/lib/app.schema'
 import Image from 'next/image'
-import { ChangeEventHandler, FC, useState } from 'react'
+import { ChangeEventHandler, FC, useEffect, useState } from 'react'
 import { useFormContext } from 'react-hook-form'
 import { z } from 'zod'
 
@@ -19,6 +19,8 @@ const commonClass =
   'flex items-center border border-dashed rounded-lg cursor-pointer aspect-video'
 
 const ThumbnailSelector: FC<ThumbnailSelectorProps> = ({ initialValue }) => {
+  const [thumbnailTemp, setThumbnailTemp] = useState('')
+
   const { control, setValue, watch } =
     useFormContext<z.infer<typeof editorFormSchema>>()
 
@@ -29,12 +31,19 @@ const ThumbnailSelector: FC<ThumbnailSelectorProps> = ({ initialValue }) => {
     if (!files) return null
 
     const file = files[0]
-    setValue('thumbnail', URL.createObjectURL(file))
+    // setValue('thumbnail', URL.createObjectURL(file))
+    setValue('thumbnail', file)
   }
 
-  //   useEffect(() => {
-  //     if (typeof initialValue === 'string') setSelectThumbnail(initialValue)
-  //   }, [initialValue])
+  const thumbnailWatch = watch('thumbnail')
+  useEffect(() => {
+    if (typeof thumbnailWatch === 'string') {
+      setThumbnailTemp(thumbnailWatch)
+    } else {
+      setThumbnailTemp(URL.createObjectURL(thumbnailWatch))
+    }
+  }, [thumbnailWatch])
+
   return (
     <div className="w-32 ">
       <FormField
@@ -52,9 +61,9 @@ const ThumbnailSelector: FC<ThumbnailSelectorProps> = ({ initialValue }) => {
                   onChange={handleInputChange}
                 />
                 <label htmlFor="thumbnail">
-                  {watch('thumbnail') ? (
+                  {thumbnailTemp ? (
                     <Image
-                      src={watch('thumbnail') as string}
+                      src={thumbnailTemp}
                       alt="Thumbnail Image"
                       className={commonClass}
                       style={{ objectFit: 'cover' }}

@@ -22,6 +22,8 @@ import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { editorFormSchema } from '@/lib/app.schema'
 import { Form, FormControl, FormField, FormItem, FormMessage } from '../ui/form'
+import { useMutation } from '@tanstack/react-query'
+import axios from 'axios'
 
 const Tiptap = () => {
   const [selectionRange, setselectionRange] = useState<Range>()
@@ -99,12 +101,39 @@ const Tiptap = () => {
     },
   })
 
-  function onSubmitHandler(values: z.infer<typeof editorFormSchema>) {
+  const createPost = async (formData: FormData) => {
+    console.log('UI- Orm data -> ', formData)
+
+    await axios.post('/api/posts', formData)
+  }
+
+  const { mutate: createPostMutation, isLoading: isUploading } = useMutation({
+    mutationFn: createPost,
+    onSuccess: () => {
+      console.log('sucess')
+      // queryClient.invalidateQueries(['images'])
+    },
+    onError: () => {
+      console.log('Error ')
+    },
+  })
+
+  function onSubmitHandler(posts: z.infer<typeof editorFormSchema>) {
     if (!editor) return null
 
-    console.log('content', editor.getHTML())
-    // editorForm.setValue('content', editor.getHTML())
-    console.log('File Content', { ...values })
+    const formData = new FormData()
+    for (let key in posts) {
+      const value = (posts as any)[key]
+
+      if (key === 'tags' && value.trim()) {
+        const tags = (value as string).split(',').map(tag => tag.trim())
+        formData.append('tags', JSON.stringify(tags))
+      } else if (key === 'content') {
+        formData.append('content', editor.getHTML())
+      } else formData.append(key, value)
+    }
+
+    createPostMutation(formData)
   }
 
   const initialContent = editorForm.getValues('content')

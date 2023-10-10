@@ -2,6 +2,14 @@
 
 import * as z from 'zod'
 
+const MAX_FILE_SIZE = 500000
+const ACCEPTED_IMAGE_TYPES = [
+  'image/jpeg',
+  'image/jpg',
+  'image/png',
+  'image/webp',
+]
+
 export const seoFormSchema = z.object({
   slug: z.string(),
   tags: z.string(),
