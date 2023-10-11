@@ -11,14 +11,12 @@ import { ChangeEventHandler, FC, useEffect, useState } from 'react'
 import { useFormContext } from 'react-hook-form'
 import { z } from 'zod'
 
-interface ThumbnailSelectorProps {
-  initialValue?: string
-}
+interface ThumbnailSelectorProps {}
 
 const commonClass =
   'flex items-center border border-dashed rounded-lg cursor-pointer aspect-video'
 
-const ThumbnailSelector: FC<ThumbnailSelectorProps> = ({ initialValue }) => {
+const ThumbnailSelector: FC<ThumbnailSelectorProps> = () => {
   const [thumbnailTemp, setThumbnailTemp] = useState('')
 
   const { control, setValue, watch } =
@@ -38,7 +36,7 @@ const ThumbnailSelector: FC<ThumbnailSelectorProps> = ({ initialValue }) => {
     if (typeof thumbnailWatch === 'string') {
       setThumbnailTemp(thumbnailWatch)
     } else {
-      setThumbnailTemp(URL.createObjectURL(new Blob(thumbnailWatch)))
+      setThumbnailTemp(URL.createObjectURL(thumbnailWatch))
     }
   }, [thumbnailWatch])
 

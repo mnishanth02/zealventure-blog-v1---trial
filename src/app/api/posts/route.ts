@@ -16,7 +16,7 @@ export const GET = async (request: NextRequest, response: NextResponse) => {
     return NextResponse.json({ error: error.message }, { status: 500 })
   }
 }
-
+//  Create New Post
 export const POST = async (req: NextRequest, res: NextResponse) => {
   try {
     const formData = await req.formData()

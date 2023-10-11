@@ -25,12 +25,14 @@ import { Form, FormControl, FormField, FormItem, FormMessage } from '../ui/form'
 import { useMutation } from '@tanstack/react-query'
 import axios from 'axios'
 import { log } from 'console'
+import { generateEditorFormDate } from '@/utils/helpers'
 
 interface Props {
   slug?: string
+  postId?: string
   buttonTitle?: string
 }
-const Tiptap: FC<Props> = ({ slug, buttonTitle = 'submit' }) => {
+const Tiptap: FC<Props> = ({ slug, buttonTitle = 'Submit' }) => {
   const [selectionRange, setselectionRange] = useState<Range>()
 
   const editor = useEditor({
@@ -99,20 +101,34 @@ const Tiptap: FC<Props> = ({ slug, buttonTitle = 'submit' }) => {
   const { reset, handleSubmit, getValues, control } = editorForm
 
   useEffect(() => {
-    axios.get(`/api/posts/${slug}`).then((data: any) => {
-      // console.log('axios post data ->>', data.data.post)
-      reset(data.data.post)
-    })
+    if (slug) {
+      axios.get(`/api/posts/${slug}`).then((data: any) => {
+        // console.log('axios post data ->>', data.data.post)
+        reset(data.data.post)
+      })
+    }
   }, [reset, slug])
 
   const createPost = async (formData: FormData) => {
-    console.log('UI- Orm data -> ', formData)
-
     await axios.post('/api/posts', formData)
+  }
+  const patchPost = async (formData: FormData) => {
+    const postId = formData.get('id')
+    await axios.patch(`/api/posts/${postId}`, formData)
   }
 
   const { mutate: createPostMutation, isLoading: isUploading } = useMutation({
     mutationFn: createPost,
+    onSuccess: data => {
+      console.log('sucess-->', data)
+      // queryClient.invalidateQueries(['images'])
+    },
+    onError: () => {
+      console.log('Error ')
+    },
+  })
+  const { mutate: patchPostMutation, isLoading: isUpdating } = useMutation({
+    mutationFn: patchPost,
     onSuccess: () => {
       console.log('sucess')
       // queryClient.invalidateQueries(['images'])
@@ -125,19 +141,13 @@ const Tiptap: FC<Props> = ({ slug, buttonTitle = 'submit' }) => {
   function onSubmitHandler(posts: z.infer<typeof editorFormSchema>) {
     if (!editor) return null
 
-    const formData = new FormData()
-    for (let key in posts) {
-      const value = (posts as any)[key]
+    const formData = generateEditorFormDate(posts, editor.getHTML())
 
-      if (key === 'tags' && value.trim()) {
-        const tags = (value as string).split(',').map(tag => tag.trim())
-        formData.append('tags', JSON.stringify(tags))
-      } else if (key === 'content') {
-        formData.append('content', editor.getHTML())
-      } else formData.append(key, value)
+    if (buttonTitle === 'Update') {
+      patchPostMutation(formData)
+    } else {
+      createPostMutation(formData)
     }
-
-    createPostMutation(formData)
   }
 
   const initialContent = getValues('content')
