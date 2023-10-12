@@ -1,7 +1,7 @@
 import cloudinary from '@/lib/cloudinary'
 import { NextRequest, NextResponse } from 'next/server'
 import streamifier from 'streamifier'
-import { CloudinaryResponse } from '../../../../types/app'
+import { CloudinaryResponse } from '@/types/app'
 
 export const GET = async (request: NextRequest, response: NextResponse) => {
   try {

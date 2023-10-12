@@ -21,3 +21,12 @@ export type CloudinaryResponse = {
   original_filename: string
   api_key: string
 }
+
+export type PostDetails = {
+  title: string
+  slug: string
+  meta: string
+  tags: string[]
+  createdAt: string
+  thumbnail?: string
+}

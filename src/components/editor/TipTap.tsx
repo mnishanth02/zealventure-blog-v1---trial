@@ -25,7 +25,7 @@ import { Form, FormControl, FormField, FormItem, FormMessage } from '../ui/form'
 import { useMutation } from '@tanstack/react-query'
 import axios from 'axios'
 import { log } from 'console'
-import { generateEditorFormDate } from '@/utils/helpers'
+import { generateEditorFormDate } from '@/lib/utils'
 
 interface Props {
   slug?: string
@@ -114,6 +114,8 @@ const Tiptap: FC<Props> = ({ slug, buttonTitle = 'Submit' }) => {
   }
   const patchPost = async (formData: FormData) => {
     const postId = formData.get('id')
+    console.log('Post ID -UI -->', postId)
+
     await axios.patch(`/api/posts/${postId}`, formData)
   }
 

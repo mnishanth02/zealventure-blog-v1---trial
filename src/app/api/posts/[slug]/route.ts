@@ -6,20 +6,20 @@ import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import streamifier from 'streamifier'
 import cloudinary from '@/lib/cloudinary'
-import { CloudinaryResponse } from '../../../../../types/app'
+import { CloudinaryResponse } from '@/types/app'
 
 // Get Post By Id
 export const GET = async (
   request: Request,
-  { params }: { params: { postId: string } },
+  { params }: { params: { slug: string } },
 ) => {
-  const { postId } = params
-  console.log('postId', postId)
+  const { slug } = params
+  console.log('slug', slug)
   // if (postId === 'create') return null
 
   try {
     await dbConnect()
-    const post = await Post.findById(postId)
+    const post = await Post.findOne({ slug })
     if (!post) NextResponse.json({ error: 'Post Not found' }, { status: 400 })
 
     const postRes: z.infer<typeof editorFormSchema> = {
@@ -41,10 +41,12 @@ export const GET = async (
 // Update post by postId
 export const PATCH = async (
   req: NextRequest,
-  { params }: { params: { postId: string } },
+  { params }: { params: { slug: string } },
 ) => {
   try {
-    const { postId } = params
+    const { slug: postId } = params
+    console.log('Post ID from Server ->>>> ', postId)
+
     await dbConnect()
     let existingPost = await Post.findById(postId)
     if (!existingPost)
@@ -52,7 +54,7 @@ export const PATCH = async (
 
     const formData = await req.formData()
     let body = Object.fromEntries(formData)
-    console.log(body)
+    // console.log(body)
 
     let tags = []
     if (body.tags) tags = JSON.parse(body.tags as string)
@@ -70,8 +72,9 @@ export const PATCH = async (
       existingPost.slug = slug.toString()
       existingPost.meta = meta.toString()
 
-      if (thumbnail) {
+      if (thumbnail && typeof thumbnail !== 'string') {
         const data = thumbnail as Blob
+        console.log('thumbnail', data)
         const buffer = Buffer.from(await data.arrayBuffer())
         try {
           const response = new Promise((resolve, reject) => {
@@ -93,25 +96,28 @@ export const PATCH = async (
               ),
             )
           })
+          const newUploaderResponse = (await response) as CloudinaryResponse
+          console.log('newUploaderResponse', newUploaderResponse)
+
           const existingPublicId = existingPost.thumbnail?.public_id
           if (existingPublicId)
             await cloudinary.uploader.destroy(existingPublicId)
 
-          const newUploaderResponse = (await response) as CloudinaryResponse
           existingPost.thumbnail = {
             url: newUploaderResponse.secure_url,
             public_id: newUploaderResponse.public_id,
           }
-
-          await existingPost.save()
-
-          return NextResponse.json({ post: existingPost }, { status: 200 })
+          console.log('Bedore ssave in Server')
         } catch (error) {
           console.log(error)
           return NextResponse.json({ error: error }, { status: 400 })
         }
       }
     }
+
+    if (existingPost) await existingPost.save()
+
+    return NextResponse.json({ post: existingPost }, { status: 200 })
   } catch (error: any) {
     console.log(error.response.data)
   }

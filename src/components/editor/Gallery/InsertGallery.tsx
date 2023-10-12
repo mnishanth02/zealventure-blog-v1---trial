@@ -20,7 +20,7 @@ import ButtonLoading from '@/components/common/ButtonLoading'
 import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
 import { DialogClose } from '@radix-ui/react-dialog'
-import { Button, buttonVariants } from '@/components/ui/button'
+import { buttonVariants } from '@/components/ui/button'
 
 // const images = [
 //   {

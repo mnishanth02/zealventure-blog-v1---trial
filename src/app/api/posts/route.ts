@@ -4,13 +4,22 @@ import { PostValidationSchema, validateSchema } from '@/lib/validator'
 import Post from '@/models/Post'
 import { NextRequest, NextResponse } from 'next/server'
 import streamifier from 'streamifier'
-import { CloudinaryResponse } from '../../../../types/app'
+import { CloudinaryResponse } from '@/types/app'
+import { formatPosts, readPostFromDb } from '@/lib/helpers'
 
 export const GET = async (request: NextRequest, response: NextResponse) => {
   try {
-    await dbConnect()
+    const params = request.nextUrl.searchParams
+    const limit = params.get('limit') as string
+    const pageNo = params.get('pageNo') as string
 
-    return NextResponse.json('success', { status: 200 })
+    const posts = await readPostFromDb(parseInt(limit), parseInt(pageNo))
+
+    if (posts) {
+      const formatedPosts = formatPosts(posts)
+
+      return NextResponse.json({ posts: formatedPosts }, { status: 200 })
+    }
   } catch (error: any) {
     console.log('error-> ', error)
     return NextResponse.json({ error: error.message }, { status: 500 })

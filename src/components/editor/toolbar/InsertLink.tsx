@@ -1,7 +1,6 @@
 import { FC } from 'react'
 import { BsLink45Deg } from 'react-icons/bs'
 import { Editor } from '@tiptap/react'
-import { validateUrl } from '@/lib/utils'
 import InsertLinkForm from './InsertLinkForm'
 import { Toggle } from '@/components/ui/toggle'
 import {
@@ -9,6 +8,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover'
+import { validateUrl } from '@/lib/utils'
 
 interface LinkFormProps {
   editor: Editor

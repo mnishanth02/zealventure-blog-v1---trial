@@ -24,12 +24,12 @@ import {
 } from 'react-icons/bs'
 
 import { RiDoubleQuotesL } from 'react-icons/ri'
-import { getFocusedEditor } from '@/lib/utils'
 import InsertLink, { LinkOptions } from './toolbar/InsertLink'
 import EmbedYoutube from './toolbar/EmbedYoutube'
 import axios from 'axios'
 import InsertGallery, { ImageSelectionResult } from './Gallery/InsertGallery'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { getFocusedEditor } from '@/lib/utils'
 interface ToolbarProps {
   editor: Editor | null
 }
