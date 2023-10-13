@@ -1,23 +1,23 @@
 'use client'
+
 import { FC, useState } from 'react'
-import Logo from './Logo'
 import Link from 'next/link'
-
-import { Button } from '../ui/button'
-
-import { LuLayoutDashboard, LuMails, LuUsers } from 'react-icons/lu'
-import { MdOutlineArticle, MdOutlineContactMail } from 'react-icons/md'
-
-import { RiMenuFoldFill, RiMenuUnfoldFill } from 'react-icons/ri'
-import ZeLogo from './ZeLogo'
 import { Moon, Sun } from 'lucide-react'
 import { useTheme } from 'next-themes'
+import { LuLayoutDashboard, LuMails, LuUsers } from 'react-icons/lu'
+import { MdOutlineArticle, MdOutlineContactMail } from 'react-icons/md'
+import { RiMenuFoldFill, RiMenuUnfoldFill } from 'react-icons/ri'
+
+import { Button } from '../ui/button'
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '../ui/dropdown-menu'
+import Logo from './Logo'
+import LogoLight from './LogoLight'
+import ZeLogo from './ZeLogo'
 
 export interface AdminNavProps {}
 
@@ -39,7 +39,7 @@ const navItems = [
 
 const AdminNav: FC<AdminNavProps> = ({}) => {
   const [open, setOpen] = useState(true)
-  const { setTheme } = useTheme()
+  const { setTheme, theme } = useTheme()
 
   return (
     <nav
@@ -52,7 +52,7 @@ const AdminNav: FC<AdminNavProps> = ({}) => {
           href={'/admin'}
           className="flex items-center p-4 space-x-2 transition-all "
         >
-          {open ? <Logo /> : <ZeLogo />}
+          {open ? theme === 'dark' ? <LogoLight /> : <Logo /> : <ZeLogo />}
           <span
             className={`text-xl leading-none duration-300 ${!open && 'hidden'}`}
           >
@@ -60,7 +60,7 @@ const AdminNav: FC<AdminNavProps> = ({}) => {
           </span>
         </Link>
         <div className="p-4 space-y-2">
-          {navItems.map(item => {
+          {navItems.map((item) => {
             return (
               <Link
                 key={item.href}

@@ -62,6 +62,6 @@
     @apply border-border;
   }
   body {
-    @apply antialiased bg-background text-foreground;
+    @apply antialiased transition bg-background text-foreground;
   }
 }

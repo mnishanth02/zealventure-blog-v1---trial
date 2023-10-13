@@ -6,6 +6,6 @@ export const getPostsQueryFn = async ({ pageParam = 1 }) =>
     .get(`/api/posts`, {
       params: { limit: '9', pageNo: pageParam - 1 },
     })
-    .then(res => {
+    .then((res) => {
       return res.data.posts as PostDetails[]
     })

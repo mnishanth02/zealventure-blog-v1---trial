@@ -1,7 +1,10 @@
 import { ThemeProvider } from '@/components/providers/ThemeProvider'
+
 import '../styles/globals.css'
+
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
+
 import TanstackProvider from '@/components/providers/TanstackProvider'
 
 const inter = Inter({ subsets: ['latin'] })
@@ -19,9 +22,6 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      {/* <head>
-        <link rel="icon" href="/favicon.ico" sizes="any" />
-      </head> */}
       <body className={inter.className}>
         <TanstackProvider>
           <ThemeProvider
@@ -30,7 +30,7 @@ export default function RootLayout({
             enableSystem
             disableTransitionOnChange
           >
-            {children}
+            <main>{children}</main>
           </ThemeProvider>
         </TanstackProvider>
       </body>

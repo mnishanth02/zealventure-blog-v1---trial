@@ -121,7 +121,7 @@ const Tiptap: FC<Props> = ({ slug, buttonTitle = 'Submit' }) => {
 
   const { mutate: createPostMutation, isLoading: isUploading } = useMutation({
     mutationFn: createPost,
-    onSuccess: data => {
+    onSuccess: (data) => {
       console.log('sucess-->', data)
       // queryClient.invalidateQueries(['images'])
     },
