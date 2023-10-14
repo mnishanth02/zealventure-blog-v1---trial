@@ -32,7 +32,7 @@ const PostsList: FC<PostsListProps> = ({}) => {
   const _posts = data?.pages.flatMap((page) => page)
 
   return (
-    <section className="max-w-5xl p-2 mx-auto ">
+    <section className="max-w-4xl p-2 mx-auto ">
       <Tabs defaultValue="allPost" className="">
         <TabsList>
           <TabsTrigger value="allPost">All Posts</TabsTrigger>
@@ -43,7 +43,7 @@ const PostsList: FC<PostsListProps> = ({}) => {
             {_posts.map((post, i) => {
               return (
                 <div ref={i === _posts.length - 1 ? ref : null} key={post.slug}>
-                  <PostCard post={post} />
+                  <PostCard post={post} index={i} />
                 </div>
               )
             })}

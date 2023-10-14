@@ -1,31 +1,30 @@
 'use client'
 
 import { FC, useEffect, useState } from 'react'
-import { useEditor, EditorContent, getMarkRange, Range } from '@tiptap/react'
-import StarterKit from '@tiptap/starter-kit'
-import Toolbar from './Toolbar'
-
-import { Separator } from '@/components/ui/separator'
-
-import Underline from '@tiptap/extension-underline'
-import Placeholder from '@tiptap/extension-placeholder'
-import Link from '@tiptap/extension-link'
-import Youtube from '@tiptap/extension-youtube'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import Image from '@tiptap/extension-image'
-import EditLink from './toolbar/EditLink'
-import { Input } from '../ui/input'
-import SeoForm from './SeoForm'
-import ButtonLoading from '../common/ButtonLoading'
-import ThumbnailSelector from './toolbar/ThumbnailSelector'
+import Link from '@tiptap/extension-link'
+import Placeholder from '@tiptap/extension-placeholder'
+import Underline from '@tiptap/extension-underline'
+import Youtube from '@tiptap/extension-youtube'
+import { EditorContent, getMarkRange, Range, useEditor } from '@tiptap/react'
+import StarterKit from '@tiptap/starter-kit'
+import axios from 'axios'
 import { FormProvider, useForm } from 'react-hook-form'
 import { z } from 'zod'
-import { zodResolver } from '@hookform/resolvers/zod'
+
 import { editorFormSchema } from '@/lib/app.schema'
-import { Form, FormControl, FormField, FormItem, FormMessage } from '../ui/form'
-import { useMutation } from '@tanstack/react-query'
-import axios from 'axios'
-import { log } from 'console'
 import { generateEditorFormDate } from '@/lib/utils'
+import { Separator } from '@/components/ui/separator'
+
+import ButtonLoading from '../common/ButtonLoading'
+import { Form, FormControl, FormField, FormItem, FormMessage } from '../ui/form'
+import { Input } from '../ui/input'
+import SeoForm from './SeoForm'
+import Toolbar from './Toolbar'
+import EditLink from './toolbar/EditLink'
+import ThumbnailSelector from './toolbar/ThumbnailSelector'
 
 interface Props {
   slug?: string
@@ -34,6 +33,7 @@ interface Props {
 }
 const Tiptap: FC<Props> = ({ slug, buttonTitle = 'Submit' }) => {
   const [selectionRange, setselectionRange] = useState<Range>()
+  const queryClient = useQueryClient()
 
   const editor = useEditor({
     extensions: [
@@ -75,7 +75,7 @@ const Tiptap: FC<Props> = ({ slug, buttonTitle = 'Submit' }) => {
       },
       attributes: {
         class:
-          'max-w-full mx-auto dark:text-secondary-foreground h-full prose prose-sm sm:prose-base lg:prose-lg xl:prose-2xl m-5 focus:outline-none',
+          'max-w-full mx-auto dark:prose-invert h-full prose prose-sm sm:prose-base lg:prose-lg xl:prose-2xl m-5 focus:outline-none',
       },
     },
   })
@@ -121,9 +121,8 @@ const Tiptap: FC<Props> = ({ slug, buttonTitle = 'Submit' }) => {
 
   const { mutate: createPostMutation, isLoading: isUploading } = useMutation({
     mutationFn: createPost,
-    onSuccess: (data) => {
-      console.log('sucess-->', data)
-      // queryClient.invalidateQueries(['images'])
+    onSuccess: () => {
+      queryClient.invalidateQueries(['posts'])
     },
     onError: () => {
       console.log('Error ')
@@ -133,7 +132,7 @@ const Tiptap: FC<Props> = ({ slug, buttonTitle = 'Submit' }) => {
     mutationFn: patchPost,
     onSuccess: () => {
       console.log('sucess')
-      // queryClient.invalidateQueries(['images'])
+      queryClient.invalidateQueries(['posts'])
     },
     onError: () => {
       console.log('Error ')
@@ -160,11 +159,11 @@ const Tiptap: FC<Props> = ({ slug, buttonTitle = 'Submit' }) => {
   }, [initialContent, editor])
 
   return (
-    <section className="p-3 space-y-4 text-secondary-foreground ">
+    <section className="p-3 space-y-4 text-secondary-foreground">
       <FormProvider {...editorForm}>
         <Form {...editorForm}>
           <form onSubmit={handleSubmit(onSubmitHandler)}>
-            <div className="sticky top-0 z-10 space-y-4">
+            <div className="sticky top-0 z-20 space-y-4 bg-background">
               <div className="flex items-center justify-between ">
                 <ThumbnailSelector />
                 <div className="inline-block">
@@ -184,7 +183,7 @@ const Tiptap: FC<Props> = ({ slug, buttonTitle = 'Submit' }) => {
                     <FormControl>
                       <Input
                         placeholder="Title"
-                        className="mb-3 text-3xl italic font-semibold focus-visible:ring-0"
+                        className="mb-3 text-3xl italic font-semibold h-14 focus-visible:ring-0"
                         {...field}
                       />
                     </FormControl>

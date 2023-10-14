@@ -23,10 +23,20 @@ export type CloudinaryResponse = {
 }
 
 export type PostDetails = {
+  id: string
   title: string
   slug: string
+  content?: string
   meta: string
   tags: string[]
-  createdAt: string
   thumbnail?: string
+  createdAt: string
+}
+
+export interface UserProfile {
+  id: string
+  name: string
+  email: string
+  avatar: string | undefined
+  role: 'user' | 'admin'
 }

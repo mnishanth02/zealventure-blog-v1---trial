@@ -1,10 +1,13 @@
 // Helpers for API
-import dbConnect from './dbConnect'
 import Post, { PostModelSchema } from '@/models/Post'
+
 import { PostDetails } from '@/types/app'
 
+import dbConnect from './dbConnect'
+
 export const formatPosts = (posts: PostModelSchema[]): PostDetails[] => {
-  return posts.map(post => ({
+  return posts.map((post) => ({
+    id: post?._id.toString(),
     title: post.title,
     slug: post.slug,
     tags: post.tags,

@@ -1,11 +1,12 @@
+import { NextRequest, NextResponse } from 'next/server'
+import Post from '@/models/Post'
+import streamifier from 'streamifier'
+
+import { CloudinaryResponse } from '@/types/app'
 import cloudinary from '@/lib/cloudinary'
 import dbConnect from '@/lib/dbConnect'
-import { PostValidationSchema, validateSchema } from '@/lib/validator'
-import Post from '@/models/Post'
-import { NextRequest, NextResponse } from 'next/server'
-import streamifier from 'streamifier'
-import { CloudinaryResponse } from '@/types/app'
 import { formatPosts, readPostFromDb } from '@/lib/helpers'
+import { PostValidationSchema, validateSchema } from '@/lib/validator'
 
 export const GET = async (request: NextRequest, response: NextResponse) => {
   try {

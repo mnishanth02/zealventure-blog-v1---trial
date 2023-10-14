@@ -1,16 +1,25 @@
 'use client'
 
-import { queryClientOptions } from '@/lib/utils'
+import { cache, useState } from 'react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
-import { cache, useState } from 'react'
+import { Session } from 'next-auth'
+import { SessionProvider } from 'next-auth/react'
 
-function TanstackProvider({ children }: { children: React.ReactNode }) {
+import { queryClientOptions } from '@/lib/utils'
+
+function TanstackProvider({
+  children,
+  session,
+}: {
+  children: React.ReactNode
+  session?: Session | null
+}) {
   const [queryClient] = useState(() => new QueryClient(queryClientOptions))
 
   return (
     <QueryClientProvider client={queryClient}>
-      {children}
+      <SessionProvider session={session}>{children}</SessionProvider>
       {/* <ReactQueryDevtools initialIsOpen={false} /> */}
     </QueryClientProvider>
   )

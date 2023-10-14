@@ -1,3 +1,9 @@
+import { ChangeEventHandler, FC, useEffect, useState } from 'react'
+import Image from 'next/image'
+import { useFormContext } from 'react-hook-form'
+import { z } from 'zod'
+
+import { editorFormSchema } from '@/lib/app.schema'
 import {
   FormControl,
   FormField,
@@ -5,16 +11,12 @@ import {
   FormMessage,
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
-import { editorFormSchema } from '@/lib/app.schema'
-import Image from 'next/image'
-import { ChangeEventHandler, FC, useEffect, useState } from 'react'
-import { useFormContext } from 'react-hook-form'
-import { z } from 'zod'
+import { Label } from '@/components/ui/label'
 
 interface ThumbnailSelectorProps {}
 
 const commonClass =
-  'flex items-center border border-dashed rounded-lg cursor-pointer aspect-video'
+  'flex items-center border border-dashed rounded-lg cursor-pointer aspect-video border border-secondary-foreground/40'
 
 const ThumbnailSelector: FC<ThumbnailSelectorProps> = () => {
   const [thumbnailTemp, setThumbnailTemp] = useState('')
@@ -56,7 +58,7 @@ const ThumbnailSelector: FC<ThumbnailSelectorProps> = () => {
                   accept="image/jpg, image/png, image/jpeg"
                   onChange={handleInputChange}
                 />
-                <label htmlFor="thumbnail">
+                <Label htmlFor="thumbnail">
                   {thumbnailTemp ? (
                     <Image
                       src={thumbnailTemp}
@@ -69,7 +71,7 @@ const ThumbnailSelector: FC<ThumbnailSelectorProps> = () => {
                   ) : (
                     <PosterUI label="Thumbnail" />
                   )}
-                </label>
+                </Label>
               </div>
             </FormControl>
             <FormMessage />

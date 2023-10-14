@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { Moon, Sun } from 'lucide-react'
 import { useTheme } from 'next-themes'
 import { LuLayoutDashboard, LuMails, LuUsers } from 'react-icons/lu'
-import { MdOutlineArticle, MdOutlineContactMail } from 'react-icons/md'
+import { MdOutlineArticle } from 'react-icons/md'
 import { RiMenuFoldFill, RiMenuUnfoldFill } from 'react-icons/ri'
 
 import { Button } from '../ui/button'
@@ -15,6 +15,12 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '../ui/dropdown-menu'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '../ui/tooltip'
 import Logo from './Logo'
 import LogoLight from './LogoLight'
 import ZeLogo from './ZeLogo'
@@ -30,11 +36,6 @@ const navItems = [
   },
   { href: '/admin/users', icon: <LuUsers size={24} />, label: 'Users' },
   { href: '/admin/comments', icon: <LuMails size={24} />, label: 'Comments' },
-  {
-    href: '/admin/contacts',
-    icon: <MdOutlineContactMail />,
-    label: 'Contacts',
-  },
 ]
 
 const AdminNav: FC<AdminNavProps> = ({}) => {
@@ -62,20 +63,29 @@ const AdminNav: FC<AdminNavProps> = ({}) => {
         <div className="p-4 space-y-2">
           {navItems.map((item) => {
             return (
-              <Link
-                key={item.href}
-                href={item.href}
-                className="flex items-center p-2 space-x-3 text-xl rounded-md hover:bg-secondary-foreground hover:text-secondary"
-              >
-                {item.icon}
-                <span
-                  className={`flex-1 text-base leading-none font-medium duration-200 ${
-                    !open && 'hidden'
-                  }`}
+              <Tooltip key={item.href}>
+                <Link
+                  href={item.href}
+                  className="flex items-center justify-center p-2 space-x-3 text-xl rounded-md jusr hover:bg-secondary-foreground hover:text-secondary"
                 >
-                  {item.label}
-                </span>
-              </Link>
+                  <TooltipTrigger>{item.icon}</TooltipTrigger>
+                  <TooltipContent
+                    side="right"
+                    align="center"
+                    sideOffset={10}
+                    className={`${open && 'hidden'}`}
+                  >
+                    <p>{item.label}</p>
+                  </TooltipContent>
+                  <span
+                    className={`flex-1 text-base leading-none font-medium duration-200 ${
+                      !open && 'hidden'
+                    }`}
+                  >
+                    {item.label}
+                  </span>
+                </Link>
+              </Tooltip>
             )
           })}
         </div>

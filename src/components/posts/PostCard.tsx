@@ -1,42 +1,83 @@
-import { PostDetails } from '@/types/app'
-import { FC } from 'react'
+'use client'
 
+import { FC, useState } from 'react'
+import Image from 'next/image'
+import Link from 'next/link'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
+import axios from 'axios'
+import { format } from 'date-fns'
+import { useSession } from 'next-auth/react'
+
+import { PostDetails, UserProfile } from '@/types/app'
+import { trimText } from '@/lib/utils'
 import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
-import { Button } from '../ui/button'
-import Image from 'next/image'
-import { format } from 'date-fns'
-import { trimText } from '@/lib/utils'
-import Link from 'next/link'
-import { Pencil, Trash2 } from 'lucide-react'
+
+import PostCardFooter from '../common/PostCardFooter'
 
 interface PostCardProps {
   post: PostDetails
+  index?: number
 }
 
-const PostCard: FC<PostCardProps> = ({ post }) => {
+const PostCard: FC<PostCardProps> = ({ post, index }) => {
+  const [deletingPostId, setDeletingPostId] = useState('')
+
+  const queryClient = useQueryClient()
   const { title, thumbnail, meta, slug, tags, createdAt } = post
+
+  const { data, status } = useSession()
+  const profile = data?.user as UserProfile | undefined
+
+  const isAdmin = profile && profile.role === 'admin'
+
+  const deletePost = async (post: PostDetails) => {
+    await axios.delete(`/api/posts/${post.id}`)
+  }
+
+  const { mutate: deleteMutation, isLoading: isDeleting } = useMutation({
+    mutationFn: deletePost,
+    onSuccess: () => {
+      setDeletingPostId('')
+      queryClient.invalidateQueries(['posts'])
+    },
+    onError: () => {
+      console.log('Error ')
+    },
+  })
+
+  const deleteHandler = () => {
+    deleteMutation(post)
+    setDeletingPostId(post.id)
+  }
+
   return (
-    <Card className="flex flex-col justify-between">
+    <Card
+      className={`flex flex-col justify-between h-full ${
+        deletingPostId === post.id && isDeleting ? 'animate-pulse' : ''
+      } `}
+    >
       <CardHeader>
-        <Link href={'/admin/posts/' + slug}>
+        <Link href={'/' + slug}>
           <CardTitle>{trimText(title, 50)}</CardTitle>
         </Link>
       </CardHeader>
       <CardContent>
         <div className="relative overflow-hidden rounded-md aspect-video">
           {!thumbnail ? (
-            <div className="flex items-center justify-center w-full h-full font-semibold opacity-50">
+            <Link
+              href={'/' + slug}
+              className="flex items-center justify-center w-full h-full font-semibold opacity-50"
+            >
               No Image
-            </div>
+            </Link>
           ) : (
-            <Link href={'/admin/posts/' + slug}>
+            <Link href={'/' + slug}>
               <Image
                 src={thumbnail as string}
                 fill
@@ -59,18 +100,13 @@ const PostCard: FC<PostCardProps> = ({ post }) => {
         </div>
         <CardDescription> {trimText(meta, 70)}</CardDescription>
       </CardContent>
-      <CardFooter className="flex justify-end space-x-2">
-        <Link href={'/admin/posts/update/' + slug}>
-          <Button variant="secondary" size={'icon'}>
-            <Trash2 size={20} />
-          </Button>
-        </Link>
-        <Link href={'/admin/posts/update/' + slug}>
-          <Button size={'icon'}>
-            <Pencil size={20} />
-          </Button>
-        </Link>
-      </CardFooter>
+      {isAdmin && (
+        <PostCardFooter
+          onDelete={deleteHandler}
+          isloading={isDeleting}
+          slug={slug}
+        />
+      )}
     </Card>
   )
 }

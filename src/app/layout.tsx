@@ -25,10 +25,10 @@ export default function RootLayout({
       <body className={inter.className}>
         <TanstackProvider>
           <ThemeProvider
+            enableColorScheme
             attribute="class"
             defaultTheme="system"
             enableSystem
-            disableTransitionOnChange
           >
             <main>{children}</main>
           </ThemeProvider>

@@ -1,12 +1,15 @@
 'use client'
+
 import { FC, useEffect } from 'react'
+import { useFormContext } from 'react-hook-form'
+import slugify from 'slugify'
 import * as z from 'zod'
+
+import { editorFormSchema } from '@/lib/app.schema'
+
+import { FormControl, FormField, FormItem, FormMessage } from '../ui/form'
 import { InputWithLabel } from '../ui/inputWithLabel'
 import { Textarea } from '../ui/textarea'
-import { useFormContext } from 'react-hook-form'
-import { editorFormSchema } from '@/lib/app.schema'
-import { FormControl, FormField, FormItem, FormMessage } from '../ui/form'
-import slugify from 'slugify'
 
 const SeoForm: FC = () => {
   const { control, setValue, watch } =
@@ -19,7 +22,7 @@ const SeoForm: FC = () => {
   }, [setValue, titleWatch])
 
   return (
-    <section className="space-y-2">
+    <section className="py-2 space-y-2">
       <h1 className="text-xl font-semibold underline">SEO Section</h1>
       <FormField
         control={control}

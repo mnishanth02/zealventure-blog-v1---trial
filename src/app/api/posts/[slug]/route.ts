@@ -1,12 +1,13 @@
+import { NextRequest, NextResponse } from 'next/server'
+import Post from '@/models/Post'
+import streamifier from 'streamifier'
+import { z } from 'zod'
+
+import { CloudinaryResponse } from '@/types/app'
 import { editorFormSchema } from '@/lib/app.schema'
+import cloudinary from '@/lib/cloudinary'
 import dbConnect from '@/lib/dbConnect'
 import { PostValidationSchema, validateSchema } from '@/lib/validator'
-import Post from '@/models/Post'
-import { NextRequest, NextResponse } from 'next/server'
-import { z } from 'zod'
-import streamifier from 'streamifier'
-import cloudinary from '@/lib/cloudinary'
-import { CloudinaryResponse } from '@/types/app'
 
 // Get Post By Id
 export const GET = async (
@@ -50,7 +51,7 @@ export const PATCH = async (
     await dbConnect()
     let existingPost = await Post.findById(postId)
     if (!existingPost)
-      NextResponse.json({ error: 'Post Not found' }, { status: 400 })
+      NextResponse.json({ error: 'Post Not found' }, { status: 404 })
 
     const formData = await req.formData()
     let body = Object.fromEntries(formData)
@@ -120,5 +121,28 @@ export const PATCH = async (
     return NextResponse.json({ post: existingPost }, { status: 200 })
   } catch (error: any) {
     console.log(error.response.data)
+  }
+}
+
+// Delete Post By Id
+export const DELETE = async (
+  request: Request,
+  { params }: { params: { slug: string } },
+) => {
+  const { slug: postId } = params
+
+  try {
+    await dbConnect()
+    const post = await Post.findByIdAndDelete(postId)
+
+    if (!post) NextResponse.json({ error: 'Post Not found' }, { status: 404 })
+
+    const publicId = post?.thumbnail?.public_id
+
+    if (publicId) await cloudinary.uploader.destroy(publicId)
+
+    return NextResponse.json({ removed: true }, { status: 200 })
+  } catch (error: any) {
+    return NextResponse.json({ error: error.message }, { status: 500 })
   }
 }

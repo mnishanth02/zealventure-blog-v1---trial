@@ -1,6 +1,7 @@
-import { Model, ObjectId, Schema, model, models } from 'mongoose'
+import { Model, model, models, ObjectId, Schema } from 'mongoose'
 
 export interface PostModelSchema {
+  _id: ObjectId
   title: string
   slug: string
   meta: string
