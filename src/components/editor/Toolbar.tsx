@@ -1,7 +1,20 @@
+import { FC } from 'react'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Editor } from '@tiptap/react'
-import { FC, useEffect } from 'react'
+import axios from 'axios'
+import {
+  BsBraces,
+  BsCode,
+  BsListOl,
+  BsListUl,
+  BsTypeBold,
+  BsTypeItalic,
+  BsTypeStrikethrough,
+  BsTypeUnderline,
+} from 'react-icons/bs'
+import { RiDoubleQuotesL } from 'react-icons/ri'
 
-import { Separator } from '@/components/ui/separator'
+import { getFocusedEditor } from '@/lib/utils'
 import {
   Select,
   SelectContent,
@@ -9,27 +22,13 @@ import {
   SelectItem,
   SelectTrigger,
 } from '@/components/ui/select'
-import { Toggle } from '../ui/toggle'
-import {
-  BsTypeBold,
-  BsTypeStrikethrough,
-  BsBraces,
-  BsCode,
-  BsListOl,
-  BsListUl,
-  BsTypeItalic,
-  BsTypeUnderline,
-  BsImageFill,
-  BsYoutube,
-} from 'react-icons/bs'
+import { Separator } from '@/components/ui/separator'
 
-import { RiDoubleQuotesL } from 'react-icons/ri'
-import InsertLink, { LinkOptions } from './toolbar/InsertLink'
-import EmbedYoutube from './toolbar/EmbedYoutube'
-import axios from 'axios'
+import { Toggle } from '../ui/toggle'
 import InsertGallery, { ImageSelectionResult } from './Gallery/InsertGallery'
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { getFocusedEditor } from '@/lib/utils'
+import EmbedYoutube from './toolbar/EmbedYoutube'
+import InsertLink, { LinkOptions } from './toolbar/InsertLink'
+
 interface ToolbarProps {
   editor: Editor | null
 }
@@ -67,10 +66,26 @@ const Toolbar: FC<ToolbarProps> = ({ editor }) => {
     },
   })
 
+  const convertoBase64AndUpload = (file: File) => {
+    const reader = new FileReader()
+
+    if (file) {
+      reader.readAsDataURL(file)
+      reader.onload = () => {
+        // console.log(reader.result)
+        const formData = new FormData()
+
+        formData.append('image', reader.result as string)
+        uploadMutaton(formData)
+      }
+      reader.onerror = (error) => {
+        console.log('error->', error)
+      }
+    }
+  }
+
   const handleImageUpload = (image: File) => {
-    const formData = new FormData()
-    formData.append('image', image)
-    uploadMutaton(formData)
+    convertoBase64AndUpload(image)
   }
 
   if (!editor) return null

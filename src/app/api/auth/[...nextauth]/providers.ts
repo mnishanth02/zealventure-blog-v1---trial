@@ -39,8 +39,6 @@ export const providers = () => {
       clientId: process.env.GITHUB_CLIENT_ID!,
       clientSecret: process.env.GITHUB_CLIENT_SECRET!,
       async profile(profile) {
-        console.log(profile)
-
         await dbConnect()
 
         const oldUser = await User.findOne({ email: profile.email })
@@ -62,11 +60,6 @@ export const providers = () => {
         } else {
           userProfile.role = oldUser.role
         }
-        console.log({
-          id: profile.id,
-          ...userProfile,
-        })
-
         return {
           id: profile.id.toString(),
           ...userProfile,

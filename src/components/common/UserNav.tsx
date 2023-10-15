@@ -3,27 +3,21 @@
 import { FC } from 'react'
 import Link from 'next/link'
 import { Moon, Sun } from 'lucide-react'
-import { signIn, signOut, useSession } from 'next-auth/react'
+import { signIn, useSession } from 'next-auth/react'
 import { useTheme } from 'next-themes'
 
 import { UserProfile } from '@/types/app'
 
-import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar'
 import { Button } from '../ui/button'
 import {
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuGroup,
   DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuShortcut,
   DropdownMenuTrigger,
 } from '../ui/dropdown-menu'
 import Logo from './Logo'
 import LogoLight from './LogoLight'
 import Profile from './Profile'
-import ZeLogo from './ZeLogo'
 
 interface UserNavProps {}
 
@@ -36,7 +30,6 @@ const UserNav: FC<UserNavProps> = ({}) => {
   const isAdmin = profile && profile.role === 'admin'
 
   const isAuth = status === 'authenticated'
-  //   console.log(session)
   const handleLogin = async () => {
     await signIn()
   }
@@ -47,11 +40,6 @@ const UserNav: FC<UserNavProps> = ({}) => {
         {theme === 'dark' ? <LogoLight /> : <Logo />}
       </Link>
       <div className="flex items-center justify-between space-x-4">
-        {/* <Button
-          variant={'outline'}
-          size={'icon'}
-          onClick={() => setTheme('light')}
-        ></Button> */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="outline" size="icon">

@@ -53,7 +53,6 @@ async function getPost(params: { slug: string }) {
       createdAt: post.createdAt.toString(),
     } as PostDetails
   } catch (error) {
-    console.log(error)
     notFound()
   }
 }

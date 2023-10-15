@@ -7,12 +7,13 @@ import PostsList from '@/components/posts/PostsList'
 import { ReactQueryHydrate } from '@/components/providers/ReactQueryHydrate'
 
 async function Posts() {
-  const queryClient = getQueryClient()
-  await queryClient.prefetchInfiniteQuery(['posts'], getPostsQueryFn)
-  const dehydratedState = dehydrate(queryClient)
+  // const queryClient = getQueryClient()
+  // await queryClient.prefetchInfiniteQuery(['posts'], getPostsQueryFn)
+  // const dehydratedState = dehydrate(queryClient)
 
   return (
-    <ReactQueryHydrate state={dehydratedState}>
+    // <ReactQueryHydrate state={dehydratedState}>
+    <ReactQueryHydrate>
       <PostsList />
     </ReactQueryHydrate>
   )

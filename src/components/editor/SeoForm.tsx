@@ -18,7 +18,14 @@ const SeoForm: FC = () => {
   const titleWatch = watch('title')
 
   useEffect(() => {
-    setValue('slug', titleWatch ? slugify(titleWatch) : '')
+    setValue(
+      'slug',
+      titleWatch
+        ? slugify(titleWatch, {
+            strict: true,
+          })
+        : '',
+    )
   }, [setValue, titleWatch])
 
   return (

@@ -21,23 +21,62 @@ const commonClass =
 const ThumbnailSelector: FC<ThumbnailSelectorProps> = () => {
   const [thumbnailTemp, setThumbnailTemp] = useState('')
 
-  const { control, setValue, watch } =
+  const { control, setValue, watch, formState } =
     useFormContext<z.infer<typeof editorFormSchema>>()
 
-  const handleInputChange: ChangeEventHandler<HTMLInputElement> = ({
+  // Convert a file to base64 string
+  const toBase64 = (file: File) => {
+    return new Promise((resolve, reject) => {
+      const fileReader = new FileReader()
+
+      fileReader.readAsDataURL(file)
+
+      fileReader.onload = () => {
+        resolve(fileReader.result)
+      }
+
+      fileReader.onerror = (error) => {
+        reject(error)
+      }
+    })
+  }
+
+  const handleInputChange: ChangeEventHandler<HTMLInputElement> = async ({
     target,
   }) => {
     const { files } = target
     if (!files) return null
     const file = files[0]
-    setValue('thumbnail', file)
+    // console.log('file base46-->', convertoBase64(file))
+    convertoBase64(file)
+    // const base64 = await toBase64(file as File)
+    // setValue('thumbnail', URL.createObjectURL(file))
+    // setValue('thumbnail', base64)
+    // setValue('thumbnail', file)
+  }
+
+  const convertoBase64 = (file: File) => {
+    const reader = new FileReader()
+
+    if (file) {
+      reader.readAsDataURL(file)
+      reader.onload = () => {
+        console.log(reader.result)
+        setValue('thumbnail', reader.result)
+      }
+      reader.onerror = (error) => {
+        console.log('error->', error)
+      }
+    }
   }
 
   const thumbnailWatch = watch('thumbnail')
   useEffect(() => {
     if (typeof thumbnailWatch === 'string') {
       setThumbnailTemp(thumbnailWatch)
+      // console.log('thumbnailWatch as Stin ->', thumbnailWatch)
     } else {
+      // setThumbnailTemp(thumbnailWatch)
       setThumbnailTemp(URL.createObjectURL(thumbnailWatch))
     }
   }, [thumbnailWatch])

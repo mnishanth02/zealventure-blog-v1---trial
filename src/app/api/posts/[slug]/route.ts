@@ -1,12 +1,12 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server';
 import Post from '@/models/Post'
-import streamifier from 'streamifier'
 import { z } from 'zod'
 
-import { CloudinaryResponse } from '@/types/app'
 import { editorFormSchema } from '@/lib/app.schema'
 import cloudinary from '@/lib/cloudinary'
 import dbConnect from '@/lib/dbConnect'
+import { isAdmin } from '@/lib/helpers'
+import { isBase64Image } from '@/lib/utils'
 import { PostValidationSchema, validateSchema } from '@/lib/validator'
 
 // Get Post By Id
@@ -15,8 +15,6 @@ export const GET = async (
   { params }: { params: { slug: string } },
 ) => {
   const { slug } = params
-  console.log('slug', slug)
-  // if (postId === 'create') return null
 
   try {
     await dbConnect()
@@ -45,8 +43,14 @@ export const PATCH = async (
   { params }: { params: { slug: string } },
 ) => {
   try {
+    const admin = await isAdmin()
+    if (!admin)
+      return NextResponse.json(
+        { error: 'Unauthorized request!' },
+        { status: 401 },
+      )
+
     const { slug: postId } = params
-    console.log('Post ID from Server ->>>> ', postId)
 
     await dbConnect()
     let existingPost = await Post.findById(postId)
@@ -55,7 +59,7 @@ export const PATCH = async (
 
     const formData = await req.formData()
     let body = Object.fromEntries(formData)
-    // console.log(body)
+    console.log(body)
 
     let tags = []
     if (body.tags) tags = JSON.parse(body.tags as string)
@@ -65,50 +69,31 @@ export const PATCH = async (
 
     const { title, content, slug, meta, thumbnail } = body
 
-    console.log('postexist->', existingPost)
-
     if (existingPost) {
       existingPost.title = title.toString()
       existingPost.content = content.toString()
       existingPost.slug = slug.toString()
       existingPost.meta = meta.toString()
 
-      if (thumbnail && typeof thumbnail !== 'string') {
-        const data = thumbnail as Blob
-        console.log('thumbnail', data)
-        const buffer = Buffer.from(await data.arrayBuffer())
+      if (thumbnail && isBase64Image(thumbnail.toString())) {
         try {
-          const response = new Promise((resolve, reject) => {
-            return streamifier.createReadStream(buffer).pipe(
-              cloudinary.uploader.upload_stream(
-                {
-                  folder: 'zealventure/blog',
-                  upload_preset: 'yeqhjlwt',
-                  use_filename: true,
-                },
-                (error, result) => {
-                  if (error) {
-                    console.log('error-<', error)
-                    reject(error)
-                  }
-                  resolve(result)
-                  // console.log('Result -<< ', result)
-                },
-              ),
-            )
-          })
-          const newUploaderResponse = (await response) as CloudinaryResponse
-          console.log('newUploaderResponse', newUploaderResponse)
+          const { secure_url, url } = await cloudinary.uploader.upload(
+            thumbnail.toString(),
+            {
+              folder: 'zealventure/blog',
+              upload_preset: 'yeqhjlwt',
+              use_filename: true,
+            },
+          )
 
           const existingPublicId = existingPost.thumbnail?.public_id
           if (existingPublicId)
             await cloudinary.uploader.destroy(existingPublicId)
 
           existingPost.thumbnail = {
-            url: newUploaderResponse.secure_url,
-            public_id: newUploaderResponse.public_id,
+            url: secure_url,
+            public_id: url,
           }
-          console.log('Bedore ssave in Server')
         } catch (error) {
           console.log(error)
           return NextResponse.json({ error: error }, { status: 400 })
@@ -121,6 +106,7 @@ export const PATCH = async (
     return NextResponse.json({ post: existingPost }, { status: 200 })
   } catch (error: any) {
     console.log(error.response.data)
+    return NextResponse.json({ error: error }, { status: 500 })
   }
 }
 
@@ -132,6 +118,13 @@ export const DELETE = async (
   const { slug: postId } = params
 
   try {
+    const admin = await isAdmin()
+    if (!admin)
+      return NextResponse.json(
+        { error: 'Unauthorized request!' },
+        { status: 401 },
+      )
+
     await dbConnect()
     const post = await Post.findByIdAndDelete(postId)
 

@@ -103,7 +103,6 @@ const Tiptap: FC<Props> = ({ slug, buttonTitle = 'Submit' }) => {
   useEffect(() => {
     if (slug) {
       axios.get(`/api/posts/${slug}`).then((data: any) => {
-        // console.log('axios post data ->>', data.data.post)
         reset(data.data.post)
       })
     }
@@ -114,7 +113,6 @@ const Tiptap: FC<Props> = ({ slug, buttonTitle = 'Submit' }) => {
   }
   const patchPost = async (formData: FormData) => {
     const postId = formData.get('id')
-    console.log('Post ID -UI -->', postId)
 
     await axios.patch(`/api/posts/${postId}`, formData)
   }

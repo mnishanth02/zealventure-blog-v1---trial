@@ -1,5 +1,11 @@
+import {
+  GetServerSidePropsContext,
+  NextApiRequest,
+  NextApiResponse,
+} from 'next'
+import { NextRequest, NextResponse } from 'next/server'
 import User from '@/models/User'
-import type { NextAuthOptions } from 'next-auth'
+import { getServerSession, type NextAuthOptions } from 'next-auth'
 
 import dbConnect from '@/lib/dbConnect'
 
@@ -33,4 +39,14 @@ export const options: NextAuthOptions = {
   //   signIn: '/auth/signin',
   //   error: '/404',
   // },
+}
+
+// Use it in server contexts
+export function auth(
+  ...args:
+    | [GetServerSidePropsContext['req'], GetServerSidePropsContext['res']]
+    | [NextApiRequest, NextApiResponse]
+    | []
+) {
+  return getServerSession(...args, options)
 }

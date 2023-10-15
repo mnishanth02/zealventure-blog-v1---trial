@@ -1,10 +1,18 @@
-import cloudinary from '@/lib/cloudinary'
 import { NextRequest, NextResponse } from 'next/server'
-import streamifier from 'streamifier'
-import { CloudinaryResponse } from '@/types/app'
 
-export const GET = async (request: NextRequest, response: NextResponse) => {
+import cloudinary from '@/lib/cloudinary'
+import { isAdmin } from '@/lib/helpers'
+import { isBase64Image } from '@/lib/utils'
+
+export const GET = async () => {
   try {
+    const admin = await isAdmin()
+    if (!admin)
+      return NextResponse.json(
+        { error: 'Unauthorized request!' },
+        { status: 401 },
+      )
+
     const { resources } = await cloudinary.api.resources({
       resource_type: 'image',
       type: 'upload',
@@ -20,34 +28,51 @@ export const GET = async (request: NextRequest, response: NextResponse) => {
 }
 
 export const POST = async (req: NextRequest, res: NextResponse) => {
+  const admin = await isAdmin()
+  if (!admin)
+    return NextResponse.json(
+      { error: 'Unauthorized request!' },
+      { status: 401 },
+    )
+
   const formData = await req.formData()
-  const data = (await formData.get('image')) as Blob
-  const buffer = Buffer.from(await data.arrayBuffer())
+  let body = Object.fromEntries(formData)
+  const { image } = body
 
   try {
-    const response = new Promise((resolve, reject) => {
-      return streamifier.createReadStream(buffer).pipe(
-        cloudinary.uploader.upload_stream(
-          {
-            folder: 'zealventure/blog',
-            upload_preset: 'yeqhjlwt',
-            use_filename: true,
-          },
-          (error, result) => {
-            if (error) {
-              console.log('error-<', error)
-              reject(error)
-            }
-            resolve(result)
-            // console.log('Result -<< ', result)
-          },
-        ),
+    if (image && isBase64Image(image as string)) {
+      const { secure_url, url } = await cloudinary.uploader.upload(
+        image.toString(),
+        {
+          folder: 'zealventure/blog',
+          upload_preset: 'yeqhjlwt',
+          use_filename: true,
+        },
       )
-    })
+      return NextResponse.json({ src: secure_url }, { status: 200 })
+    }
+    // const response = new Promise((resolve, reject) => {
+    //   return streamifier.createReadStream(buffer).pipe(
+    //     cloudinary.uploader.upload_stream(
+    //       {
+    //         folder: 'zealventure/blog',
+    //         upload_preset: 'yeqhjlwt',
+    //         use_filename: true,
+    //       },
+    //       (error, result) => {
+    //         if (error) {
+    //           console.log('error-<', error)
+    //           reject(error)
+    //         }
+    //         resolve(result)
+    //       },
+    //     ),
+    //   )
+    // })
 
-    const resultFinal = (await response) as CloudinaryResponse
-    return NextResponse.json({ src: resultFinal.secure_url }, { status: 200 })
-  } catch (error) {
+    // const resultFinal = (await response) as CloudinaryResponse
+  } catch (error: any) {
     console.log('error->>', error)
+    return NextResponse.json({ error: error.message }, { status: 500 })
   }
 }

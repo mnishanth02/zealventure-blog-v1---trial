@@ -1,10 +1,13 @@
+;
 // Helpers For UI Components
 
-import { type ClassValue, clsx } from 'clsx'
-import { twMerge } from 'tailwind-merge'
-import { editorFormSchema } from '@/lib/app.schema'
 import { Editor } from '@tiptap/react'
+import { clsx, type ClassValue } from 'clsx'
+import { FormState } from 'react-hook-form'
+import { twMerge } from 'tailwind-merge'
 import { z } from 'zod'
+
+import { editorFormSchema } from '@/lib/app.schema'
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
@@ -23,15 +26,20 @@ export const generateEditorFormDate = (
   editorContent: string,
 ) => {
   const formData = new FormData()
+
   for (let key in posts) {
     const value = (posts as any)[key]
 
     if (key === 'tags' && value.trim()) {
-      const tags = (value as string).split(',').map(tag => tag.trim())
+      const tags = (value as string).split(',').map((tag) => tag.trim())
       formData.append('tags', JSON.stringify(tags))
     } else if (key === 'content') {
       formData.append('content', editorContent)
     } else formData.append(key, value)
+
+    //else if (key === 'thumbnail') {
+    //   formData.append('thumbnail', JSON.stringify(value))
+    // }
   }
   return formData
 }
@@ -53,4 +61,10 @@ export const validateUrl = (url: string) => {
   }
 
   return finalUrl.origin
+}
+
+export const isBase64Image = (str: string) => {
+  if (str.startsWith('data:image/')) return true
+
+  return false
 }
