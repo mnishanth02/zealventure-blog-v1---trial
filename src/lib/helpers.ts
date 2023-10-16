@@ -1,23 +1,18 @@
-;
 // Helpers for API
-import { readFileSync, writeFile, writeFileSync } from 'fs';
-import { Readable } from 'stream';
-import { NextApiRequest } from 'next';
-import Post, { PostModelSchema } from '@/models/Post';
-import { UploadApiResponse, UploadStream } from 'cloudinary';
-import formidable from 'formidable';
-import { getServerSession } from 'next-auth';
+import { Readable } from 'stream'
+import { NextApiRequest } from 'next'
+import { CommentModelSchema } from '@/models/Comments'
+import Post, { PostModelSchema } from '@/models/Post'
+import { UploadApiResponse } from 'cloudinary'
+import formidable from 'formidable'
+import { ObjectId } from 'mongoose'
+import { getServerSession } from 'next-auth'
 
+import { CommentResponse, PostDetails, UserProfile } from '@/types/app'
+import { options } from '@/app/api/auth/[...nextauth]/options'
 
-
-import { CloudinaryResponse, PostDetails, UserProfile } from '@/types/app';
-import { options } from '@/app/api/auth/[...nextauth]/options';
-
-
-
-import cloudinary from './cloudinary';
-import dbConnect from './dbConnect';
-
+import cloudinary from './cloudinary'
+import dbConnect from './dbConnect'
 
 export const formatPosts = (posts: PostModelSchema[]): PostDetails[] => {
   return posts.map((post) => ({
@@ -56,6 +51,31 @@ export const isAdmin = async () => {
   return user && user.role === 'admin'
 }
 
+export const isAuth = async () => {
+  const session = await getServerSession(options)
+  const user = session?.user
+  if (user) return user as UserProfile
+}
+
+const getLikedByOwner = (likes: any[], user: UserProfile) =>
+  likes.includes(user.id)
+
+export const formatComment = (
+  comment: CommentModelSchema,
+  user?: UserProfile,
+): CommentResponse => {
+  return {
+    id: comment._id as unknown as string,
+    content: comment.content,
+    likes: comment.likes.length,
+    chiefComment: comment?.chiefComment || false,
+    createdAt: comment.createdAt?.toString(),
+    owner: user ? { id: user.id, name: user.name, avatar: user.avatar } : null,
+    repliedTo: comment?.repliedTo as unknown as string,
+    likedByOwner: user ? getLikedByOwner(comment.likes, user) : false,
+  }
+}
+
 export async function uploadStream(buffer: Buffer): Promise<UploadApiResponse> {
   return new Promise((res, rej) => {
     const theTransformStream = cloudinary.uploader.upload_stream(
@@ -77,13 +97,6 @@ export async function uploadStream(buffer: Buffer): Promise<UploadApiResponse> {
 }
 
 export async function uploadFile(fileString: string) {
-  // let _buffer = Buffer.from(buffer, 'base64')
-  // const filebuffer = Buffer.toString('base64')
-  // const sd = (await toBase64(file)) as string
-  // console.log('Sd->', sd)
-
-  // console.log('thumbnail as string -> ', fileString)
-
   return await cloudinary.uploader.upload(fileString, {
     folder: 'zealventure/blog',
     upload_preset: 'yeqhjlwt',
@@ -91,9 +104,6 @@ export async function uploadFile(fileString: string) {
     resource_type: 'image',
     chunk_size: 100000,
   })
-
-  // console.log('secureURL', secure_url)
-  // console.log('publick', public_id)
 }
 
 interface FormidablePromise<T> {
@@ -111,22 +121,5 @@ export const readFile = <T extends object>(
 
       resolve({ files, body: fields as T })
     })
-  })
-}
-
-// Convert a file to base64 string
-const toBase64 = (file: File) => {
-  return new Promise((resolve, reject) => {
-    const fileReader = new FileReader()
-
-    fileReader.readAsDataURL(file)
-
-    fileReader.onload = () => {
-      resolve(fileReader.result)
-    }
-
-    fileReader.onerror = (error) => {
-      reject(error)
-    }
   })
 }

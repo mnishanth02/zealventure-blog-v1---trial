@@ -1,19 +1,14 @@
-'use client'
+'use client';
 
 import { FC } from 'react'
 import { Moon, Sun } from 'lucide-react'
-import { useSession } from 'next-auth/react'
 import { useTheme } from 'next-themes'
 
-import { UserProfile } from '@/types/app'
+import { useAuth } from '@/hooks/useAuth'
 import {
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuGroup,
   DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuShortcut,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 
@@ -24,12 +19,10 @@ import SearchBar from './SearchBar'
 interface AdminSecondaryNavProps {}
 
 const AdminSecondaryNav: FC<AdminSecondaryNavProps> = ({}) => {
-  const { data, status } = useSession()
-  const { setTheme, theme } = useTheme()
+  const user = useAuth()?.user
+  const { setTheme } = useTheme()
+  const isAdmin = user && user.role === 'admin'
 
-  const profile = data?.user as UserProfile | undefined
-
-  const isAdmin = profile && profile.role === 'admin'
   return (
     <nav className="flex items-center justify-between">
       <SearchBar />
@@ -51,7 +44,7 @@ const AdminSecondaryNav: FC<AdminSecondaryNavProps> = ({}) => {
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
-        <Profile isAdmin={isAdmin} />
+        <Profile isAdmin={isAdmin} user={user || null} />
       </div>
     </nav>
   )

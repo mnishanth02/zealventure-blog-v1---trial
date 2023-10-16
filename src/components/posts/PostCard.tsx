@@ -6,10 +6,10 @@ import Link from 'next/link'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import axios from 'axios'
 import { format } from 'date-fns'
-import { useSession } from 'next-auth/react'
 
-import { PostDetails, UserProfile } from '@/types/app'
+import { PostDetails } from '@/types/app'
 import { trimText } from '@/lib/utils'
+import { useAuth } from '@/hooks/useAuth'
 import {
   Card,
   CardContent,
@@ -31,10 +31,8 @@ const PostCard: FC<PostCardProps> = ({ post, index }) => {
   const queryClient = useQueryClient()
   const { title, thumbnail, meta, slug, tags, createdAt } = post
 
-  const { data, status } = useSession()
-  const profile = data?.user as UserProfile | undefined
-
-  const isAdmin = profile && profile.role === 'admin'
+  const user = useAuth()?.user
+  const isAdmin = user && user.role === 'admin'
 
   const deletePost = async (post: PostDetails) => {
     await axios.delete(`/api/posts/${post.id}`)

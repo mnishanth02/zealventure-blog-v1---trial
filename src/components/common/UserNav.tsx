@@ -1,12 +1,12 @@
-'use client'
+'use client';
 
-import { FC } from 'react'
-import Link from 'next/link'
+import { FC } from 'react';
+import Link from 'next/link';
 import { Moon, Sun } from 'lucide-react'
-import { signIn, useSession } from 'next-auth/react'
+import { signIn } from 'next-auth/react'
 import { useTheme } from 'next-themes'
 
-import { UserProfile } from '@/types/app'
+import { useAuth } from '@/hooks/useAuth'
 
 import { Button } from '../ui/button'
 import {
@@ -24,15 +24,9 @@ interface UserNavProps {}
 const UserNav: FC<UserNavProps> = ({}) => {
   const { setTheme, theme } = useTheme()
 
-  const { data, status } = useSession()
-  const profile = data?.user as UserProfile | undefined
-
-  const isAdmin = profile && profile.role === 'admin'
-
-  const isAuth = status === 'authenticated'
-  const handleLogin = async () => {
-    await signIn()
-  }
+  const auth = useAuth()
+  const isAdmin = auth?.user && auth?.user.role === 'admin'
+  const isAuth = auth?.status === 'authenticated'
 
   return (
     <nav className="flex items-center justify-between p-2 bg-secondary">
@@ -59,9 +53,9 @@ const UserNav: FC<UserNavProps> = ({}) => {
         </DropdownMenu>
 
         {isAuth ? (
-          <Profile isAdmin={isAdmin} />
+          <Profile isAdmin={isAdmin} user={auth?.user || null} />
         ) : (
-          <Button onClick={handleLogin}>Login</Button>
+          <Button onClick={async () => await signIn()}>Login</Button>
         )}
       </div>
     </nav>

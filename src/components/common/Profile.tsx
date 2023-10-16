@@ -2,6 +2,7 @@ import { FC } from 'react'
 import Link from 'next/link'
 import { signOut } from 'next-auth/react'
 
+import { UserProfile } from '@/types/app'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -18,9 +19,10 @@ import ZeLogo from './ZeLogo'
 
 interface ProfileProps {
   isAdmin?: boolean
+  user: UserProfile | null
 }
 
-const Profile: FC<ProfileProps> = ({ isAdmin }) => {
+const Profile: FC<ProfileProps> = ({ isAdmin, user }) => {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -34,9 +36,9 @@ const Profile: FC<ProfileProps> = ({ isAdmin }) => {
       <DropdownMenuContent className="w-56" align="end" forceMount>
         <DropdownMenuLabel className="font-normal">
           <div className="flex flex-col space-y-1">
-            <p className="text-sm font-medium leading-none">Nishanth Murugan</p>
+            <p className="text-sm font-medium leading-none">{user?.name}</p>
             <p className="text-xs leading-none text-muted-foreground">
-              murugann@aetna.com
+              {user?.email}
             </p>
           </div>
         </DropdownMenuLabel>

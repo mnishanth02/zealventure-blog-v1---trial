@@ -1,12 +1,6 @@
-import { writeFile } from 'fs/promises'
-import path, { join } from 'path'
-import { NextApiRequest } from 'next'
 import { NextRequest, NextResponse } from 'next/server'
 import Post from '@/models/Post'
-import formidable from 'formidable'
 
-import { CloudinaryResponse, PostDetails } from '@/types/app'
-import cloudinary from '@/lib/cloudinary'
 import dbConnect from '@/lib/dbConnect'
 import {
   formatPosts,
