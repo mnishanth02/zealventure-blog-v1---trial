@@ -3,20 +3,20 @@ import Comment from '@/models/Comments'
 import Post from '@/models/Post'
 import { isValidObjectId } from 'mongoose'
 
+import { CommentResponse } from '@/types/app'
 import dbConnect from '@/lib/dbConnect'
 import { formatComment, isAuth } from '@/lib/helpers'
 import { CommentValidationSchema, validateSchema } from '@/lib/validator'
-import { useAuth } from '@/hooks/useAuth'
 
 export const GET = async (req: NextRequest, res: NextResponse) => {
   try {
-    const user = await useAuth()?.user
+    const user = await isAuth()
     const belongsTo = req.nextUrl.searchParams.get('belongsTo')
 
     if (!belongsTo || !isValidObjectId(belongsTo))
       return NextResponse.json({ error: 'Invalid Request' }, { status: 422 })
 
-    const comment = await Comment.findOne({ belongsTo })
+    const comments = await Comment.find({ belongsTo })
       .populate({
         path: 'owner',
         select: 'name avatar',
@@ -30,15 +30,17 @@ export const GET = async (req: NextRequest, res: NextResponse) => {
       })
       .select('createdAt likes content repliedTo')
 
-    if (!comment)
+    if (!comments)
       return NextResponse.json({ error: 'Comment Not Found' }, { status: 404 })
 
-    const formatedComment = {
-      ...formatComment(comment, user),
-      replies: comment.replies?.map((c: any) => formatComment(c, user)),
-    }
+    const formatedComment = comments.map((comment) => {
+      return {
+        ...formatComment(comment, user),
+        replies: comment.replies?.map((c: any) => formatComment(c, user)),
+      }
+    }) as CommentResponse[]
 
-    return NextResponse.json({ comment: formatedComment }, { status: 200 })
+    return NextResponse.json({ comments: formatedComment }, { status: 200 })
   } catch (error: any) {
     console.log('error-> ', error)
     return NextResponse.json({ error: error.message }, { status: 500 })
@@ -79,7 +81,12 @@ export const POST = async (req: NextRequest, res: NextResponse) => {
     })
 
     await comment.save()
-    return NextResponse.json(comment, { status: 201 })
+    const commentWithOwner = await comment.populate('owner')
+
+    return NextResponse.json(
+      { comment: formatComment(commentWithOwner, user) },
+      { status: 201 },
+    )
   } catch (error: any) {
     console.log('error-> ', error)
     return NextResponse.json({ error: error.message }, { status: 500 })
@@ -121,7 +128,7 @@ export const DELETE = async (req: NextRequest, res: NextResponse) => {
       // if this is a reply comment then remove from other chief comments repliess,
       if (chiefComment?.replies?.includes(commentId as any)) {
         chiefComment.replies = chiefComment.replies.filter(
-          (cId) => cId === (commentId as any),
+          (cId) => cId !== (commentId as any),
         )
         await chiefComment.save()
       }
@@ -165,7 +172,7 @@ export const PATCH = async (req: NextRequest, res: NextResponse) => {
     const comment = await Comment.findOne({
       _id: commentId,
       owner: user?.id,
-    })
+    }).populate('owner')
 
     if (!comment)
       return NextResponse.json({ error: 'Comment Not Found' }, { status: 404 })
@@ -175,7 +182,10 @@ export const PATCH = async (req: NextRequest, res: NextResponse) => {
     comment.content = content
     await comment.save()
 
-    return NextResponse.json(comment, { status: 201 })
+    return NextResponse.json(
+      { comment: formatComment(comment, user) },
+      { status: 201 },
+    )
   } catch (error: any) {
     console.log('error-> ', error)
     return NextResponse.json({ error: error.message }, { status: 500 })

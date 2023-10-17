@@ -1,10 +1,17 @@
-import { NextRequest, NextResponse } from 'next/server'
-import Comment from '@/models/Comments'
-import Post from '@/models/Post'
-import { isValidObjectId } from 'mongoose'
+import { NextRequest, NextResponse } from 'next/server';
+import Comment from '@/models/Comments';
+import Post from '@/models/Post';
+import { isValidObjectId } from 'mongoose';
+
+
 
 import dbConnect from '@/lib/dbConnect'
-import { formatPosts, isAuth, readPostFromDb } from '@/lib/helpers'
+import {
+  formatComment,
+  formatPosts,
+  isAuth,
+  readPostFromDb,
+} from '@/lib/helpers'
 import { CommentValidationSchema, validateSchema } from '@/lib/validator'
 
 export const GET = async (request: NextRequest, response: NextResponse) => {
@@ -60,7 +67,12 @@ export const POST = async (req: NextRequest, res: NextResponse) => {
     await chiefComment.save()
     await replyComment.save()
 
-    return NextResponse.json({ comment: replyComment }, { status: 201 })
+    const finalComment = await replyComment.populate('owner')
+
+    return NextResponse.json(
+      { comment: formatComment(finalComment) },
+      { status: 201 },
+    )
   } catch (error: any) {
     console.log('error-> ', error)
     return NextResponse.json({ error: error.message }, { status: 500 })

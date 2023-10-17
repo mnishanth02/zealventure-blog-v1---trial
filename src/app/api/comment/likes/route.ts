@@ -4,7 +4,7 @@ import Post from '@/models/Post'
 import { isValidObjectId } from 'mongoose'
 
 import dbConnect from '@/lib/dbConnect'
-import { formatPosts, isAuth, readPostFromDb } from '@/lib/helpers'
+import { formatComment, isAuth } from '@/lib/helpers'
 import { CommentValidationSchema, validateSchema } from '@/lib/validator'
 
 export const GET = async (request: NextRequest, response: NextResponse) => {
@@ -42,6 +42,17 @@ export const POST = async (req: NextRequest, res: NextResponse) => {
     await dbConnect()
 
     const comment = await Comment.findById(commentId)
+      .populate({
+        path: 'owner',
+        select: 'name avatar',
+      })
+      .populate({
+        path: 'replies',
+        populate: {
+          path: 'owner',
+          select: 'name avatar',
+        },
+      })
     if (!comment)
       return NextResponse.json({ error: 'Comment Not Found!' }, { status: 422 })
 
@@ -51,8 +62,9 @@ export const POST = async (req: NextRequest, res: NextResponse) => {
     // like and unlke
 
     // Unlike
+
     if (oldLikes.includes(likedBy)) {
-      comment.likes = oldLikes.filter((like) => like !== likedBy)
+      comment.likes = oldLikes.filter((like) => like.toString() !== likedBy)
     }
     // To like a comment
     else {
@@ -61,7 +73,17 @@ export const POST = async (req: NextRequest, res: NextResponse) => {
 
     await comment.save()
 
-    return NextResponse.json({ comment }, { status: 201 })
+    return NextResponse.json(
+      {
+        comment: {
+          ...formatComment(comment, user),
+          replies: comment.replies?.map((reply: any) =>
+            formatComment(reply, user),
+          ),
+        },
+      },
+      { status: 201 },
+    )
   } catch (error: any) {
     console.log('error-> ', error)
     return NextResponse.json({ error: error.message }, { status: 500 })
